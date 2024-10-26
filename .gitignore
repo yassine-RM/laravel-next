@@ -1,0 +1,3 @@
+docker/mongo_data
+src/nextjs/node_modules
+src/laravel/vendor

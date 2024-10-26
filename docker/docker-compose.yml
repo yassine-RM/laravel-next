@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: ../src/laravel
+      dockerfile: ../../docker/Dockerfile.laravel
+    volumes:
+      - ../src/laravel:/var/www
+      - /var/www/node_modules
+
+    networks:
+      - laravel-network
+    restart: unless-stopped
+
+  web:
+    image: nginx:alpine
+    volumes:
+      - ../src/laravel/public:/var/www/public
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+    ports:
+      - "80:80"
+    networks:
+      - laravel-network
+    depends_on:
+      - app
+
+  mongo:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    networks:
+      - laravel-network
+    volumes:
+      - ./mongo_data:/data/db
+
+  nextjs:
+    build:
+      context: ../src/nextjs
+      dockerfile: ../../docker/Dockerfile.nextjs
+    volumes:
+      - ../src/nextjs:/app/nextjs
+      - /app/nextjs/node_modules
+    environment:
+      NODE_ENV: production
+    restart: unless-stopped
+    ports:
+      - "3301:3000"
+    networks:
+      - laravel-network
+
+networks:
+  laravel-network:
+
+volumes:
+  mongo_data:
